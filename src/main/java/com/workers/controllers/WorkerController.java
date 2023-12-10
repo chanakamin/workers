@@ -1,11 +1,13 @@
-package com.example.workers.controllers;
+package com.workers.controllers;
 
 import java.util.Optional;
 
+import org.hibernate.engine.jdbc.env.internal.logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,11 +16,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.example.workers.models.Worker;
-import com.example.workers.repositories.WorkerRepository;
-import com.example.workers.services.WorkerService;
+import com.workers.exceptions.ExistingWorkerException;
+import com.workers.models.Worker;
+import com.workers.services.WorkerService;
 
 @Controller
+@CrossOrigin
 @RequestMapping(path="unit/{unitId}/worker") 
 public class WorkerController {
 
@@ -30,6 +33,8 @@ public class WorkerController {
     try {
         Worker worker = this.workerService.saveWorker(newWorker, unitId);
         return new ResponseEntity<Worker>(worker, HttpStatus.CREATED);
+    } catch(ExistingWorkerException e) {
+        return new ResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY);
     } catch (Exception e) {
         return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
@@ -42,8 +47,12 @@ public class WorkerController {
 
   @GetMapping("{id}")
   @ResponseBody
-  public Optional<Worker> getWorker(@PathVariable Integer id, @PathVariable Integer unitId) {
-    return this.workerService.findWorkerOfUnit(id, unitId);
+  public ResponseEntity getWorker(@PathVariable Integer id, @PathVariable Integer unitId) {
+    Optional<Worker> worker = this.workerService.findWorkerOfUnit(id, unitId);
+    if (worker.isPresent()) {
+      return new ResponseEntity<Worker>(worker.get(), HttpStatus.OK);
+    }
+    return new ResponseEntity(HttpStatus.NOT_FOUND);
   }
 
   @GetMapping(path="")

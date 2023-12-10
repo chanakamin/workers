@@ -1,8 +1,8 @@
-package com.example.workers.repositories;
+package com.workers.repositories;
 
 import org.springframework.data.repository.CrudRepository;
 
-import com.example.workers.models.Unit;
+import com.workers.models.Unit;
 
 // This will be AUTO IMPLEMENTED by Spring into a Bean called userRepository
 // CRUD refers Create, Read, Update, Delete

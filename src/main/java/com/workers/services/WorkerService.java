@@ -1,4 +1,4 @@
-package com.example.workers.services;
+package com.workers.services;
 
 import java.util.List;
 import java.util.Optional;
@@ -6,9 +6,10 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.workers.models.Unit;
-import com.example.workers.models.Worker;
-import com.example.workers.repositories.WorkerRepository;
+import com.workers.exceptions.ExistingWorkerException;
+import com.workers.models.Unit;
+import com.workers.models.Worker;
+import com.workers.repositories.WorkerRepository;
 
 @Service
 public class WorkerService {
@@ -19,6 +20,10 @@ public class WorkerService {
 
     public Worker saveWorker(Worker newWorker, Integer unitId) throws Exception {
         Optional<Unit> unit = this.unitService.getUnit(unitId);
+        Optional<Worker> existingWorker = this.workerRepository.findByWorkerNumber(newWorker.getWorkerNumber());
+        if (existingWorker.isPresent()) {
+            throw new ExistingWorkerException("existing-worker-worker-number");
+        }
         if (unit.isPresent()) {
             newWorker.setUnit(unit.get());
             return this.workerRepository.save(newWorker);
